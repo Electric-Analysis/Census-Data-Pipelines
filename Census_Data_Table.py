@@ -9,7 +9,9 @@ import time
 
 '''
 This script is designed to pull data for the very large Census_Data table. This table has a large number of tables
-that it is pulling from therefore we need to list out every table, the year, and every row for those tables. 
+that it is pulling from therefore we need to list out every table, the year, and every row for those tables. If you
+are following this code to understand the structure of some of the other pipelines, this is a bad place to start as 
+this is the largest table and has some design philosophies native to just this pipeline due to the scale.
 
 '''
 
@@ -46,7 +48,8 @@ dataframe_df_headers = ['CEN_POP','CEN_WORKERS','CEN_URBANPOP','CEN_RURALPOP','C
                         'CEN_PERC_HHINC_150000-199999','CEN_HHINC_200000_PLUS','CEN_PERC_HHINC_200000_PLUS']
 
 
-# List out community names for the database_df communities column
+# List out community names for the database_df communities column regional data is commented out and not included
+# yet in our pipeline
 dataframe_df_communities = ['Agawam','Amherst','Ashfield','Belchertown','Bernardston','Blandford','Brimfield',
                             'Buckland','Charlemont','Chester','Chesterfield','Chicopee','Colrain','Conway','Cummington',
                             'Deerfield','East Longmeadow','Easthampton','Erving','Franklin County','Gill','Goshen',
@@ -62,7 +65,7 @@ dataframe_df_communities = ['Agawam','Amherst','Ashfield','Belchertown','Bernard
                             'Ware','Warwick','Wendell','West Springfield','Westfield','Westhampton','Whately',
                             'Wilbraham','Williamsburg','Worthington']
 
-# this table is missing 2 values, base table and api access have 65 values, 67 headers
+# This table is missing 2 values, base table and api access have 65 values (rows), 67 headers (columns)
 address_book_df = pd.DataFrame({"Table Headers": dataframe_df_headers,
                                 "Base Table":['B02001','NA','NA','NA','B02001','B02001','B02001','B02001','B02001',
                                               'B02001','B03001','B19001','B09005','NA','B05009','B16004','B16004',
@@ -165,7 +168,7 @@ def column_converter(temp_df):
     return temp_df
 
 def community_cleaner(table):
-    # List the string patterns that we will delete
+    # List the string patterns that we will delete from the community names
     patterns = [", Franklin County, Massachusetts",
                 ", Hampden County, Massachusetts",
                 ", Hampshire County, Massachusetts",
@@ -210,6 +213,20 @@ table_B02001['CEN_TWO_MORE_NOT_HISP'] = table_B02001.loc[:,  ["B02001_008E"]].su
 table_B02001['MINORITY_PERCENT'] = round(1 - table_B02001.loc[:,  ["B02001_002E"]].sum(axis = 1) / table_B02001["B02001_001E"],6)
 table_B02001 = community_cleaner(table_B02001)
 print(table_B02001.to_string())
+
+'''
+For each of the code snippets below, that follow the "Allocate community values for XXXXX" flow,
+They all follow a similar structure:
+
+Print out the name for tracking purposes
+Call the column converter function for the table we are addressing so we can change the data from strings to floats
+Allocate columns and conduct necessary mathematics, most are just simple sums
+Call the community cleaner function to clean up the community column and normalize it for sorting purposes
+Print out the entire table 
+
+The columns we are creating are still attached to their native tables, they will be allocated to the database df later 
+'''
+
 
 # Allocate community values for B03001
 print("\ntable_B03001")
@@ -345,6 +362,7 @@ table_B17026 = community_cleaner(table_B17026)
 print(table_B17026.to_string())
 
 # Allocate community values for B19001
+# Do integer valued incomes first
 print("\ntable_B19001")
 table_B19001 = column_converter(table_B19001)
 table_B19001['CEN_HOUSEHOLDS'] = table_B19001.loc[:,  ["B19001_001E"]].sum(axis = 1)
@@ -359,6 +377,7 @@ table_B19001['CEN_HHINC_100000-149999'] = table_B19001.loc[:,  ["B19001_014E","B
 table_B19001['CEN_HHINC_150000-199999'] = table_B19001.loc[:,  ["B19001_016E"]].sum(axis = 1)
 table_B19001['CEN_HHINC_200000_PLUS'] = table_B19001.loc[:,  ["B19001_017E"]].sum(axis = 1)
 
+# Do percentiles of the above data
 table_B19001['CEN_PERC_HHINC_0-9999'] = round(table_B19001.loc[:,  ["B19001_002E"]].sum(axis = 1) / table_B19001["B19001_001E"],6)
 table_B19001['CEN_PERC_HHINC_10000-14999'] = round(table_B19001.loc[:,  ["B19001_003E"]].sum(axis = 1) / table_B19001["B19001_001E"],6)
 table_B19001['CEN_PERC_HHINC_15000-24999'] = round(table_B19001.loc[:,  ["B19001_004E","B19001_005E"]].sum(axis = 1) / table_B19001["B19001_001E"],6)
@@ -422,7 +441,10 @@ table_B19113['CEN_MEDFAMINC'] = table_B19113.loc[:,  ["B19113_001E"]].sum(axis =
 table_B19113 = community_cleaner(table_B19113)
 print(table_B19113.to_string())
 
-
+# Now we assign the data from the tables to the database df
+# There are some commented out columns that are placeholders in case new data becomes available
+# This is mainly to show where the gaps are, the data will likely not be available in the future but feel free to add them
+# In if that changes. It is possible I missed some resources.
 Database_df['CEN_POP'] = table_B02001['CEN_POP']
 # Database_df['CEN_WORKERS'] = table_XXXXXXXXXX['CEN_WORKERS']
 # Database_df['CEN_URBANPOP'] = table_XXXXXXXXXX['CEN_URBANPOP']
@@ -491,7 +513,10 @@ Database_df['CEN_PERC_HHINC_150000-199999'] = table_B19001['CEN_PERC_HHINC_15000
 Database_df['CEN_HHINC_200000_PLUS'] = table_B19001['CEN_HHINC_200000_PLUS']
 Database_df['CEN_PERC_HHINC_200000_PLUS'] = table_B19001['CEN_PERC_HHINC_200000_PLUS']
 
-# integrate  the PVPC Region and Pioneer Valley variables into the table  with relevant data, calculate from exist tables
+# Integrate  the PVPC Region and Pioneer Valley variables into the table  with relevant data, calculate from existing
+# This is currently in progress. If needed the calculations can be performed in excel and is a small barrier to a data update
+# Feel free to finish this code or do it the excel way, be absolutely sure you understand the way the math works, following
+# Proper branching practices in github before updating the Main branch.
 
 
 print(f"\nDatabase Dataframe:\n{Database_df.to_string()}")

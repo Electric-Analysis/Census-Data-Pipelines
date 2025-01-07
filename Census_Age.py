@@ -6,11 +6,13 @@ def Census_Age():
 
 
     # year = int(input("Enter the year of data you want to pull: "))
+
+    # Change this year to pull a different year of data
     year = 2023
     year2 = year - 4
     print(f"{year2} - {year}")
 
-
+    # Community cleaner cleans/normalizes the column containing geographic data
     def Community_cleaner(table):
         # Clean up the community names
         patterns = [", Franklin County, Massachusetts",
@@ -26,7 +28,7 @@ def Census_Age():
         # Apply the regex substitution to the entire column
         table["NAME"] = table["NAME"].apply(lambda x: re.sub(combined_pattern, "", x))
 
-        # If you want to strip any leading/trailing whitespace
+        # To strip any leading/trailing whitespace
         table["NAME"] = table["NAME"].str.strip()
 
         table = table.sort_values(by="NAME")
@@ -44,24 +46,6 @@ def Census_Age():
 
 
 
-
-
-    # Census_Row_Specifiers = ['B09001_003','B09001_004','B09001_005','B09001_006','B09001_007','B09001_008','B09001_009',
-    #                    'B01001_031','B01001_007','B01001_008','B01001_009','B01001_010','B01001_032','B01001_033',
-    #                    'B01001_034','B01001_011','B01001_035','B01001_012','B01001_036','B01001_013','B01001_037',
-    #                    'B01001_014','B01001_038','B01001_015','B01001_039','B01001_016','B01001_040','B01001_017',
-    #                    'B01001_041','B01001_018','B01001_019','B01001_042','B01001_043','B01001_020','B01001_021',
-    #                    'B01001_044','B01001_045','B01001_022','B01001_046','B01001_023','B01001_047','B01001_024',
-    #                    'B01001_048','B01001_025','B01001_049']
-
-    # subdivisions  = ["02095","05560","09595","12505","14885","15200","16670","21780","25730","27060","29475",
-    #                  "29650","35180","35285","42040","42285","45490","47835","51265","58335","61135","61905",
-    #                  "68400","73265","74525","79110","00840","06085","08470","13485","13660","19645","26675",
-    #                  "28075","30665","30840","36300","37175","42145","42530","52144","58650","65825","67000",
-    #                  "70045","72390","76030","77890","79740","01370","04825","13590","16040","19370","26290",
-    #                  "26535","27690","29265","31785","40990","46330","52560","54030","62745","64145","72880",
-    #                  "76380","79915","82175"]
-
     ordered_communities = ['Agawam','Amherst','Ashfield','Belchertown','Bernardston','Blandford','Brimfield','Buckland',
                            'Charlemont','Chester','Chesterfield','Chicopee','Colrain','Conway','Cummington','Deerfield',
                            'East Longmeadow','Easthampton','Erving','Franklin County','Gill','Goshen','Granby','Granville',
@@ -72,16 +56,7 @@ def Census_Age():
                            'Southampton','Southwick','Springfield','Sunderland','Tolland','Wales','Ware','Warwick',
                            'Wendell','West Springfield','Westfield','Westhampton','Whately','Wilbraham','Williamsburg',
                            'Worthington']
-    # Not in use currently
-    # communities = ['Agawam' ,'Amherst','Ashfield','Belchertown','Bernardston','Blandford','Brimfield','Buckland',
-    #                'Charlemont','Chester','Chesterfield','Chicopee','Colrain','Conway','Cummington','Deerfield',
-    #                'East Longmeadow','Easthampton','Erving','Franklin County','Gill','Goshen','Granby','Granville',
-    #                'Greenfield','Hadley','Hampden County','Hampden','Hampshire County','Hatfield','Hawley','Heath','Holland',
-    #                'Holyoke','Huntington','Leverett','Leyden','Longmeadow','Ludlow','Middlefield','Monroe','Monson','Montague',
-    #                'Montgomery','New Salem','Northampton','Northfield','Orange','Palmer','Pelham','Plainfield',
-    #                'PVPC Region', 'Pioneer Valley','Rowe','Russell','Shelburne','Shutesbury','South Hadley','Southampton',
-    #                'Southwick','Springfield','Sunderland','Tolland','Wales','Ware','Warwick','Wendell','West Springfield',
-    #                'Westfield','Westhampton','Whately','Wilbraham','Williamsburg','Worthington']
+
 
     Database_df_Headers = ['UNDER_3_YEARS','3_4_YEARS','5_YEARS','6_8_YEARS','9_11_YEARS','12_14_YEARS','15_17_YEARS',
                            '18_19_YEARS','20_24_YEARS','25_29_YEARS','30_34_YEARS','35_39_YEARS','40_44_YEARS','45_49_YEARS',
@@ -216,6 +191,7 @@ def Census_Age():
     B09001_Age["12_14_YEARS"] =  B09001_Age.loc[:, ["B09001_008E"]].sum(axis = 1)
     B09001_Age["15_17_YEARS"] =  B09001_Age.loc[:, ["B09001_009E"]].sum(axis = 1)
 
+    # Show the tables in full
     print("\nTable: B01001")
     print(B01001_Age.to_string())
 
@@ -233,7 +209,7 @@ def Census_Age():
 
 
 
-    #Insert data from B01001 Table
+    #Insert data from B01001 Table into database dataframe
     Database_df["18_19_YEARS"] = B01001_Age["18_19_YEARS"]
     Database_df["20_24_YEARS"] = B01001_Age["20_24_YEARS"]
     Database_df["25_29_YEARS"] = B01001_Age["25_29_YEARS"]
@@ -250,16 +226,16 @@ def Census_Age():
     Database_df["80_84_YEARS"] = B01001_Age["80_84_YEARS"]
     Database_df["85+_YEARS"]   = B01001_Age["85+_YEARS"]
 
-    # Insert data from B09001 Table
+    #Insert data from B09001 Table into database dataframe
     Database_df["UNDER_3_YEARS"] = B09001_Age ["UNDER_3_YEARS"]
     Database_df["3_4_YEARS"] = B09001_Age["3_4_YEARS"]
-    Database_df["5_YEARS"] =  B09001_Age["5_YEARS"]
+    Database_df["5_YEARS"] = B09001_Age["5_YEARS"]
     Database_df["6_8_YEARS"] = B09001_Age["6_8_YEARS"]
     Database_df["9_11_YEARS"] = B09001_Age["9_11_YEARS"]
     Database_df["12_14_YEARS"] = B09001_Age["12_14_YEARS"]
     Database_df["15_17_YEARS"] = B09001_Age["15_17_YEARS"]
 
-    #Calculate data from other columns in final table
+    #Calculate data from other columns in database dataframe
     Database_df["CEN_POP_O4"] = Database_df.loc[:, ["5_YEARS","6_8_YEARS", "9_11_YEARS", "12_14_YEARS", "15_17_YEARS",
                                                     "18_19_YEARS", "20_24_YEARS", "25_29_YEARS", "30_34_YEARS",
                                                     "35_39_YEARS", "40_44_YEARS", "45_49_YEARS", "50_54_YEARS",
