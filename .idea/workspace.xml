@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="7a224a25-bd4d-49a2-8c12-293ea622ef3f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Census_Age.py" beforeDir="false" afterPath="$PROJECT_DIR$/Census_Age.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Census_Data_Table.py" beforeDir="false" afterPath="$PROJECT_DIR$/Census_Data_Table.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Census_Income.py" beforeDir="false" afterPath="$PROJECT_DIR$/Census_Income.py" afterDir="false" />
+    <list default="true" id="7a224a25-bd4d-49a2-8c12-293ea622ef3f" name="Changes" comment="Initial commits for commonplace data tables, some of these are not completed, and missing county or regional levels. These pipelines are all set to the &quot;town level&quot;. Future iterations are intended to include census block and tract level data.">
+      <change afterPath="$PROJECT_DIR$/Census Poverty Demographics.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,21 +28,21 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "Electric-Analysis"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Electric-Analysis&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Electric-Analysis/Census-Data-Pipelines.git",
-    "accountId": "e0416086-97bf-4148-a876-78557894d37d"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Electric-Analysis/Census-Data-Pipelines.git&quot;,
+    &quot;accountId&quot;: &quot;e0416086-97bf-4148-a876-78557894d37d&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="2rH1pCcYFw5Nq9mcsWtnYoN6e43" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -52,6 +51,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.Census Poverty Demographics.executor": "Run",
     "Python.Census_Age.executor": "Run",
     "Python.Census_Data_Table.executor": "Run",
     "Python.Census_Income.executor": "Run",
@@ -59,7 +59,29 @@
     "git-widget-placeholder": "master"
   }
 }]]></component>
-  <component name="RunManager" selected="Python.Census_Income">
+  <component name="RunManager" selected="Python.Census Poverty Demographics">
+    <configuration name="Census Poverty Demographics" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="PVPC Data Pipelines" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Census Poverty Demographics.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="Census_Age" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="PVPC Data Pipelines" />
       <option name="ENV_FILES" value="" />
@@ -128,6 +150,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.Census Poverty Demographics" />
         <item itemvalue="Python.Census_Income" />
         <item itemvalue="Python.Census_Data_Table" />
         <item itemvalue="Python.Census_Age" />
@@ -150,6 +173,19 @@
       <option name="presentableId" value="Default" />
       <updated>1736201366237</updated>
     </task>
+    <task id="LOCAL-00001" summary="Initial commits for commonplace data tables, some of these are not completed, and missing county or regional levels. These pipelines are all set to the &quot;town level&quot;. Future iterations are intended to include census block and tract level data.">
+      <option name="closed" value="true" />
+      <created>1736281399603</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1736281399603</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Initial commits for commonplace data tables, some of these are not completed, and missing county or regional levels. These pipelines are all set to the &quot;town level&quot;. Future iterations are intended to include census block and tract level data." />
+    <option name="LAST_COMMIT_MESSAGE" value="Initial commits for commonplace data tables, some of these are not completed, and missing county or regional levels. These pipelines are all set to the &quot;town level&quot;. Future iterations are intended to include census block and tract level data." />
   </component>
 </project>
