@@ -19,7 +19,9 @@ rigor = []
 
 start = time.time()
 
-api_key = "&key=49099c23404527970655eaa39f3d39c606843dfc"
+csv_file_path = "C:/Users/jtilsch/PycharmProjects/PVPC Data Pipelines/census api key.csv"
+api_key = pd.read_csv(csv_file_path, header = None).iloc[0,0]
+print(api_key)
 
 year = 2023
 timevalue = year-4
