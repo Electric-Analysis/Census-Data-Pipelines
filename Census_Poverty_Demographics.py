@@ -54,7 +54,7 @@ def Database_Dataframe_Initializer(dataframe,year,year2):
     Database_df_Headers = ['POV_AGE_U5_TOT','POV_AGE_5_17_TOT','POV_AGE_18_34_TOT','POV_AGE_35_64_TOT','POV_AGE_O65_TOT',
                            'POV_AGE_U5','POV_AGE_5_17','POV_AGE_18_34','POV_AGE_35_64','POV_AGE_O65','POV_AGE_U5_PERC',
                            'POV_AGE_5_17_PERC','POV_AGE_18_34_PERC','POV_AGE_35_64_PERC','POV_AGE_O65_PERC',
-                           'POV_SEX_FEMALE_TOT','POV_SEX_MALE_TOT','POV_SEX_BELOWPOV_MALE','POV_SEX_BELOWPOV_FEMALE',
+                           'POV_SEX_MALE_TOT','POV_SEX_FEMALE_TOT','POV_SEX_BELOWPOV_MALE','POV_SEX_BELOWPOV_FEMALE',
                            'POV_SEX_BELOWPOV_MALE_PERC','POV_SEX_BELOWPOV_FEMALE_PERC','POV_RACE_WHITE_TOT',
                            'POV_RACE_BLACK_TOT','POV_RACE_NATAMER_TOT','POV_RACE_ASIAN_TOT','POV_RACE_PACISLAND_TOT',
                            'POV_RACE_OTHER_TOT','POV_RACE_HISPANIC_TOT','POV_RACE_WHITE_NOTHISPANIC_TOT',
@@ -91,8 +91,8 @@ def Dataframe_Allocator(Database_df, Poverty_Dataframe):
     Database_df['POV_AGE_35_64_PERC'] = round(Poverty_Dataframe.loc[:, ["S1701_C03_008E"]].sum(axis=1) / 100 ,4)
     Database_df['POV_AGE_O65_PERC'] = round(Poverty_Dataframe.loc[:, ["S1701_C03_010E"]].sum(axis=1) / 100 ,4)
 
-    Database_df['POV_SEX_FEMALE_TOT'] = Poverty_Dataframe.loc[:, ["S1701_C01_012E"]].sum(axis=1)
     Database_df['POV_SEX_MALE_TOT'] = Poverty_Dataframe.loc[:, ["S1701_C01_011E"]].sum(axis=1)
+    Database_df['POV_SEX_FEMALE_TOT'] = Poverty_Dataframe.loc[:, ["S1701_C01_012E"]].sum(axis=1)
 
     Database_df['POV_SEX_BELOWPOV_MALE'] = Poverty_Dataframe.loc[:, ["S1701_C02_011E"]].sum(axis=1)
     Database_df['POV_SEX_BELOWPOV_FEMALE'] = Poverty_Dataframe.loc[:, ["S1701_C02_012E"]].sum(axis=1)
@@ -132,11 +132,9 @@ def Dataframe_Allocator(Database_df, Poverty_Dataframe):
 
     return Database_df
 
-def Main():
+def Main(year):
     start_time = time.time()
-
-    # Change the year to get a different vintage
-    year = 2023
+    year = year
     year2 = year - 4
     URL = ["https://api.census.gov/data/"+str(year)+"/acs/acs5/subject?get=group(S1701)&ucgid=pseudo(0500000US25013$0600000)",
            "https://api.census.gov/data/"+str(year)+"/acs/acs5/subject?get=group(S1701)&ucgid=pseudo(0500000US25015$0600000)",
@@ -181,6 +179,19 @@ def Main():
     print(f"Elapsed Runtime: {round(end_time - start_time, 4)} seconds")
 
 
+# Change the year to get a different vintage,
+# If you want one year, comment out the loop and ranged variable years
+# If you want a range of years comment out year and uncomment the years variable and the "for" loop
+#   Keep in mind the range function is [year,year) or Inclusive in the first year, non-inclusive in the second year so
+#   increment 1 more beyond what you want in the latter year
+
+# year = 2023
+
+years = range(2012,2024)
+for year in years:
+    Main(year)
 
 
-Main()
+
+
+# Main(year)
