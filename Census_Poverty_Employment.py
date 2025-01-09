@@ -65,7 +65,7 @@ def Database_Dataframe_Initializer(dataframe,year,year2):
     return Database_df
 
 def Dataframe_Allocator(Database_df, Poverty_Dataframe):
-    # Database_df['POV_AGE_U5_TOT'] = Poverty_Dataframe.loc[:, ["S1701_C01_003E"]].sum(axis=1)
+    # Allocate data to each column as indicated in the data dictionary
     Database_df['EMP_MALE'] = Poverty_Dataframe.loc[:, ["S1701_C01_029E"]].sum(axis=1)
     Database_df['EMP_FEMALE'] = Poverty_Dataframe.loc[:, ["S1701_C01_030E"]].sum(axis=1)
     Database_df['UNEMP_MALE'] = Poverty_Dataframe.loc[:, ["S1701_C01_032E"]].sum(axis=1)
@@ -144,7 +144,7 @@ def Main(year):
 
 # year = 2023
 
-years = range(2012,2024)
+years = range(2015,2024)
 for year in years:
     Main(year)
 
