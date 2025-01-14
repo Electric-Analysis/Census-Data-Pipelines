@@ -6,9 +6,39 @@ import re
 import pyodbc
 import time
 
+# def Printer(file_path, file_name):
+#     file_path = r"C:\Users\jtilsch\OneDrive - Pioneer Valley Planning Commission\Desktop\Projects\Database Design\Data\Census_Poverty_Employment_ Data"
+#     file_name = "Compiled_Census_Poverty_Employment"
+#     # Get a list of all files in the directory (assuming they're CSV files)
+#     files = [os.path.join(file_path, f) for f in os.listdir(file_path) if f.endswith('.csv')]
+#
+#     # Initialize a list to store DataFrames
+#     dataframes = []
+#
+#     # Loop through each file
+#     for idx, file in enumerate(files):
+#         if idx == 0:
+#             # For the first file, read it with the header
+#             df = pd.read_csv(file)
+#         else:
+#             # For subsequent files, skip the header row
+#             df = pd.read_csv(file, header=0)
+#         dataframes.append(df)
+#
+#     # Concatenate all DataFrames into one
+#     final_dataframe = pd.concat(dataframes, ignore_index=True)
+#
+#     # Save the concatenated DataFrame to a new file
+#     output_path = os.path.join(file_path, file_name + ".csv")
+#     final_dataframe.to_csv(output_path, index=False)
+#     print(f"All files compiled successfully into \n{output_path}")
+
+
+
 # Write a function that data for each url does all the conversions and returns a dataframe
 def API_Data_Collector(link):
     request = requests.get(link)
+    print(link)
     data = request.json()
     df = pd.DataFrame(data[1:], columns = data[0], )
     return df
@@ -109,7 +139,6 @@ def Database_Dataframe_Initializer(dataframe, year,year2):
 def Dataframe_Allocator(Database_df, B25004, B25035, B25045, B25064, B25071, B25088, B25092,
                         B25097, B25106, DP04):
     # Allocate data to each column as indicated in the data dictionary
-    # print(B25106.to_string())
     Database_df['CEN_HOUSINGUNITS'] = DP04.loc[:, ['DP04_0001E']].sum(axis=1)
     Database_df['CEN_OCCUPHU']      = B25106.loc[:, ['B25106_001E']].sum(axis=1)
     Database_df['CEN_VACHU'] = B25004.loc[:, ['B25004_001E']].sum(axis=1)
@@ -117,16 +146,16 @@ def Dataframe_Allocator(Database_df, B25004, B25035, B25045, B25064, B25071, B25
     Database_df['CEN_RENOCCHU'] = B25106.loc[:, ['B25106_024E']].sum(axis=1)
     Database_df['CEN_SEAVACHU'] = B25004.loc[:, ['B25004_006E']].sum(axis=1)
     Database_df['CEN_HUYEARBLT'] = B25035.loc[:, ['B25035_001E']].sum(axis=1)
-    Database_df['PER_OWN_OCC']    = round(DP04.loc[:, ['DP04_0046PE']].sum(axis=1) / 100, 4)# / DP04.loc[:, ['DP04']].sum(axis=1)
-    Database_df['CEN_HUNOVHCL'] = B25045.loc[:, ['B25045_003E','B25045_012E']].sum(axis=1) #/ B25045.loc[:, ['B25045_012E']].sum(axis=1)
+    Database_df['PER_OWN_OCC']    = round(DP04.loc[:, ['DP04_0046PE']].sum(axis=1) / 100, 4)
+    Database_df['CEN_HUNOVHCL'] = B25045.loc[:, ['B25045_003E','B25045_012E']].sum(axis=1)
     Database_df['CEN_MEDRENT'] = B25064.loc[:, ['B25064_001E']].sum(axis=1)
-    Database_df['CEN_RENT_INC'] = B25071.loc[:, ['B25071_001E']].sum(axis=1)
+    Database_df['CEN_RENT_INC'] = round(B25071.loc[:, ['B25071_001E']].sum(axis=1) / 100, 4)
     Database_df['CEN_MEDOWNVAL'] = B25097.loc[:, ['B25097_001E']].sum(axis=1)
     Database_df['CEN_MEDOWNCOSTS'] = B25088.loc[:, ['B25088_002E']].sum(axis=1)
-    Database_df['CEN_OWNCOSTS_INC'] = B25092.loc[:, ['B25092_002E']].sum(axis=1)
-    Database_df['OWN_COSTS30'] = B25106.loc[:,['B25106_006E', 'B25106_010E', 'B25106_014E', 'B25106_018E', 'B25106_022E']].sum(axis=1) / B25106.loc[:, ['B25106_002E']].sum(axis=1)
-    Database_df['RENT_COSTS30'] = B25106.loc[:,['B25106_028E', 'B25106_032E', 'B25106_036E', 'B25106_040E', 'B25106_044E']].sum(axis=1) / B25106.loc[:, ['B25106_024E']].sum(axis=1)
-    Database_df['ALL_COSTS30'] = B25106.loc[:,['B25106_006E', 'B25106_010E', 'B25106_014E', 'B25106_018E', 'B25106_022E','B25106_028E', 'B25106_032E', 'B25106_036E', 'B25106_040E', 'B25106_044E']].sum(axis=1) / B25106.loc[:, ['B25106_002E', 'B25106_024E']].sum(axis=1)
+    Database_df['CEN_OWNCOSTS_INC'] = round(B25092.loc[:, ['B25092_002E']].sum(axis=1) / 100, 4)
+    Database_df['OWN_COSTS30'] = round(B25106.loc[:,['B25106_006E', 'B25106_010E', 'B25106_014E', 'B25106_018E', 'B25106_022E']].sum(axis=1) / B25106.loc[:, ['B25106_002E']].sum(axis=1), 4)
+    Database_df['RENT_COSTS30'] = round(B25106.loc[:,['B25106_028E', 'B25106_032E', 'B25106_036E', 'B25106_040E', 'B25106_044E']].sum(axis=1) / B25106.loc[:, ['B25106_024E']].sum(axis=1), 4)
+    Database_df['ALL_COSTS30'] = round(B25106.loc[:,['B25106_006E', 'B25106_010E', 'B25106_014E', 'B25106_018E', 'B25106_022E','B25106_028E', 'B25106_032E', 'B25106_036E', 'B25106_040E', 'B25106_044E']].sum(axis=1) / B25106.loc[:, ['B25106_002E', 'B25106_024E']].sum(axis=1), 4)
     Database_df['HOUS_AFFORD'] = B25106.loc[:, ['B25106_001E']].sum(axis=1)
     # Show the final database dataframe to make sure it is in good shape
     # print(Database_df.to_string())
@@ -174,27 +203,17 @@ def Main(year):
     B25106 = cleaned_tables[8]
     DP04   = cleaned_tables[9]
     # Run a function to create the database dataframe
-    print(B25004.to_string())
     Database_Dataframe = Database_Dataframe_Initializer(B25004, year, year2)
-    print(Database_Dataframe.to_string())
     Database_Dataframe = Dataframe_Allocator(Database_Dataframe, B25004, B25035, B25045, B25064, B25071, B25088, B25092, B25097, B25106, DP04)
     print(Database_Dataframe.to_string())
 
-    # Run a function to create new columns and do math
-    # Poverty_Dataframe = Table_Math(Poverty_Dataframe)
+    Database_Dataframe.to_csv(
+        "C:/Users/jtilsch/OneDrive - Pioneer Valley Planning Commission/Desktop/Projects/Database Design/Data/Census_Housing/Census Housing " + str(year) + ".csv",
+        index = False)
+    print(
+        f"Dataframe printed to CSV in \nC:/Users/jtilsch/OneDrive - Pioneer Valley Planning Commission/Desktop/Projects/Database Design/Data/Census_Housing/Census Housing {str(year)}.csv")
 
-    # Run a function that will insert data from the original dataframe into the database dataframe, use data dictionary
-    # Database_df = Dataframe_Allocator(Database_df, Poverty_Dataframe)
-    # print(Poverty_Dataframe.to_string())
-    # print(Poverty_Dataframe.head().to_string())
-    # print(Database_df.to_string())
 
-    # Create a CSV file of the dataframe to be uploaded to the database
-    # Database_df.to_csv(
-    #     "C:/Users/jtilsch/OneDrive - Pioneer Valley Planning Commission/Desktop/Projects/Database Design/Data/Census_Poverty_Employment_ Data/Census_Poverty_EmploymentJAXX" + str(year) + ".csv",
-    #     index = False)
-    # print(
-    #     f"Dataframe printed to CSV in \nC:/Users/jtilsch/OneDrive - Pioneer Valley Planning Commission/Desktop/Projects/Database Design/Data/Census_Poverty_Employment_{str(year)}.csv")
 
 
     end_time = time.time()
@@ -207,13 +226,15 @@ def Main(year):
 #   Keep in mind the range function is [year,year) or Inclusive in the first year, non-inclusive in the second year so
 #   increment 1 more beyond what you want in the latter year
 
-year = 2022
+# year = 2022
 #
-# years = range(2015,2024)
-# for year in years:
-#     Main(year)
+years = range(2012,2024)
+for year in years:
+    Main(year)
+
+# Printer("C:/Users/jtilsch/OneDrive - Pioneer Valley Planning Commission/Desktop/Projects/Database Design/Data/Census_Housing/Census Housing")
 
 
-
+print("Ladies and gentlemen, we have lift off!!")
 
 Main(year)
