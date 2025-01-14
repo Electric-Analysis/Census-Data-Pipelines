@@ -14,19 +14,33 @@ def API_Data_Collector(link):
     return df
 
 def Table_Concatenator(year, table):
-    URL = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=county%20subdivision:*&in=state:25%20county:011,013,015"
-    URL_Counties = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=county:011,013,015&in=state:25"
-    URL_State = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=state:25"
-    links = [URL,URL_Counties,URL_State]
-    compiled_tables = []
-    for link in links:
-        # print(link)
-        req = API_Data_Collector(link)
-        compiled_tables.append(req)
-    combined_output = pd.concat(compiled_tables, ignore_index=True)
-    # print(combined_output.to_string())
-    return combined_output
+    # Conditionally handle table dp04 due to its different layout in terms of Rest API configuration otherwise concatenate
+    # As in the usual way as demonstrated in the else statement
+    if table == "DP04":
+        URL_Town_Franklin = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=pseudo(0500000US25011$0600000)"
+        URL_Town_Hampden = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=pseudo(0500000US25013$0600000)"
+        URL_Town_Hampshire = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=pseudo(0500000US25015$0600000)"
+        URL_State_County = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=0400000US25,0500000US25011,0500000US25013,0500000US25015"
+        links = [URL_Town_Franklin, URL_Town_Hampden, URL_Town_Hampshire, URL_State_County]
+        compiled_tables = []
 
+        for link in links:
+            req = API_Data_Collector(link)
+            compiled_tables.append(req)
+        combined_output = pd.concat(compiled_tables, ignore_index=True)
+        print(combined_output.to_string())
+        return combined_output
+    else:
+        URL = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=county%20subdivision:*&in=state:25%20county:011,013,015"
+        URL_Counties = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=county:011,013,015&in=state:25"
+        URL_State = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=state:25"
+        links = [URL,URL_Counties,URL_State]
+        compiled_tables = []
+        for link in links:
+            req = API_Data_Collector(link)
+            compiled_tables.append(req)
+        combined_output = pd.concat(compiled_tables, ignore_index=True)
+        return combined_output
 def Community_Cleaner(dataframe):
     # Clean up the community names
     patterns = [", Franklin County, Massachusetts",
@@ -49,8 +63,14 @@ def String_to_Numeric(dataframe):
     # Change all but the descriptive columns to numeric for calculations
     dataframe = pd.concat([pd.DataFrame([pd.to_numeric(dataframe[e], errors = 'coerce')
                             for e in dataframe.columns if e not in
-                            ['GEO_ID','NAME','state','county','county subdivision']]).T,
-                            dataframe[['GEO_ID','NAME','state','county','county subdivision']]], axis = 1)
+                            ['GEO_ID','NAME']]).T,
+                            dataframe[['GEO_ID','NAME']]], axis = 1)
+
+    # Replace large neg values with NAN
+    dataframe.replace(-6666666.660, np.nan, inplace=True)
+    dataframe.replace( -666666666.0, np.nan, inplace=True)
+    dataframe.replace("inf", np.nan, inplace=True)
+
     return dataframe
 
 def Table_Math(dataframe):
@@ -71,10 +91,11 @@ def Database_Dataframe_Initializer(dataframe, year,year2):
     #                        'Southampton','Southwick','Springfield','Sunderland','Tolland','Wales','Ware','Warwick',
     #                        'Wendell','West Springfield','Westfield','Westhampton','Whately','Wilbraham','Williamsburg',
     #                        'Worthington']
-    Database_df_Headers = ['CEN_SEAVACHU','CEN_VACHU','Per_OWN_OCC','CEN_HUYEARBLT','CEN_HUNOVHCL','CEN_MEDRENT',
-                           'CEN_RENT_INC','CEN_MEDOWNCOSTS','CEN_OWNCOSTS_INC','CEN_MEDOWNVAL','ALL_COSTS30',
-                           'CEN_OCCUPHU','CEN_OWNOCCHU','CEN_RENOCCHU','OWN_COSTS30','RENT_COSTS30','CEN_HOUSINGUNITS',
-                           'HOUS_AFFORD','HAVE_DATA','RECENT_YEAR']
+    Database_df_Headers = ['CEN_HOUSINGUNITS','CEN_OCCUPHU','CEN_VACHU','CEN_OWNOCCHU','CEN_RENOCCHU','CEN_SEAVACHU',
+                           'CEN_HUYEARBLT','PER_OWN_OCC','CEN_HUNOVHCL','CEN_MEDRENT','CEN_RENT_INC','CEN_MEDOWNVAL',
+                           'CEN_MEDOWNCOSTS','CEN_OWNCOSTS_INC','OWN_COSTS30','RENT_COSTS30','ALL_COSTS30','HOUS_AFFORD',
+                           'HAVE_DATA','RECENT_YEAR',
+]
     # community_series = pd.Series(ordered_communities)
 
     Database_df = pd.DataFrame(np.nan, index=range(len(ordered_communities)), columns=Database_df_Headers)
@@ -85,32 +106,28 @@ def Database_Dataframe_Initializer(dataframe, year,year2):
     Database_df.insert(0, "STATE", "MA")
     return Database_df
 
-def Dataframe_Allocator(Database_df, B25004, B25035, B25045, B25064, B25071, B25088, B25092, B25097, B25106):
+def Dataframe_Allocator(Database_df, B25004, B25035, B25045, B25064, B25071, B25088, B25092,
+                        B25097, B25106, DP04):
     # Allocate data to each column as indicated in the data dictionary
-    print(B25106.to_string())
-    Database_df['CEN_SEAVACHU']     = B25004.loc[:, ['B25004_006E']].sum(axis=1)
-    Database_df['CEN_VACHU']        = B25004.loc[:, ['B25004_008E']].sum(axis=1)
-    # Database_df['Per_OWN_OCC']    = B25004.loc[:, ['B25008_002']].sum(axis=1) / B25004.loc[:, ['B25008_001']].sum(axis=1)
-    Database_df['CEN_HUYEARBLT']    = B25035.loc[:, ['B25035_001E']].sum(axis=1)
-    Database_df['CEN_HUNOVHCL']     = B25045.loc[:, ['B25045_003E']].sum(axis=1) / B25045.loc[:, ['B25045_012E']].sum(axis=1)
-    Database_df['CEN_MEDRENT']      = B25064.loc[:, ['B25064_001E']].sum(axis=1)
-
-    Database_df['CEN_RENT_INC']     = B25071.loc[:, ['B25071_001E']].sum(axis=1)
-    Database_df['CEN_MEDOWNCOSTS']  = B25088.loc[:, ['B25088_002E']].sum(axis=1)
+    # print(B25106.to_string())
+    Database_df['CEN_HOUSINGUNITS'] = DP04.loc[:, ['DP04_0001E']].sum(axis=1)
+    Database_df['CEN_OCCUPHU']      = B25106.loc[:, ['B25106_001E']].sum(axis=1)
+    Database_df['CEN_VACHU'] = B25004.loc[:, ['B25004_001E']].sum(axis=1)
+    Database_df['CEN_OWNOCCHU'] = B25106.loc[:, ['B25106_002E']].sum(axis=1)
+    Database_df['CEN_RENOCCHU'] = B25106.loc[:, ['B25106_024E']].sum(axis=1)
+    Database_df['CEN_SEAVACHU'] = B25004.loc[:, ['B25004_006E']].sum(axis=1)
+    Database_df['CEN_HUYEARBLT'] = B25035.loc[:, ['B25035_001E']].sum(axis=1)
+    Database_df['PER_OWN_OCC']    = round(DP04.loc[:, ['DP04_0046PE']].sum(axis=1) / 100, 4)# / DP04.loc[:, ['DP04']].sum(axis=1)
+    Database_df['CEN_HUNOVHCL'] = B25045.loc[:, ['B25045_003E','B25045_012E']].sum(axis=1) #/ B25045.loc[:, ['B25045_012E']].sum(axis=1)
+    Database_df['CEN_MEDRENT'] = B25064.loc[:, ['B25064_001E']].sum(axis=1)
+    Database_df['CEN_RENT_INC'] = B25071.loc[:, ['B25071_001E']].sum(axis=1)
+    Database_df['CEN_MEDOWNVAL'] = B25097.loc[:, ['B25097_001E']].sum(axis=1)
+    Database_df['CEN_MEDOWNCOSTS'] = B25088.loc[:, ['B25088_002E']].sum(axis=1)
     Database_df['CEN_OWNCOSTS_INC'] = B25092.loc[:, ['B25092_002E']].sum(axis=1)
-    Database_df['CEN_MEDOWNVAL']    = B25097.loc[:, ['B25097_001E']].sum(axis=1)
-    # Database_df['ALL_COSTS30']    = B25106.loc[:, ['B25106_XXXX']].sum(axis=1)
-    # Database_df['CEN_OCCUPHU']    = B25106.loc[:, ['B25106_XXXX']].sum(axis=1)
-    Database_df['CEN_OWNOCCHU']     = B25106.loc[:, ['B25106_002E']].sum(axis=1)
-    Database_df['CEN_RENOCCHU']     = B25106.loc[:, ['B25106_024E']].sum(axis=1)
-
-    Database_df['OWN_COSTS30']      = B25106.loc[:, ['B25106_006E','B25106_010E','B25106_014E','B25106_018E','B25106_022E']].sum(axis=1) / B25106.loc[:, ['B25106_002E']].sum(axis=1)
-    Database_df['RENT_COSTS30']     = B25106.loc[:, ['B25106_028E','B25106_032E','B25106_036E','B25106_040E','B25106_044E']].sum(axis=1) / B25106.loc[:, ['B25106_024E']].sum(axis=1)
-    Database_df['CEN_HOUSINGUNITS'] = B25106.loc[:, ['B25106_001E']].sum(axis=1)
-    Database_df['HOUS_AFFORD']      = B25106.loc[:, ['B25106_001E']].sum(axis=1)
-
-    # Replace large neg values with NAN
-    Database_df.replace(-6666666.660, np.nan, inplace=True)
+    Database_df['OWN_COSTS30'] = B25106.loc[:,['B25106_006E', 'B25106_010E', 'B25106_014E', 'B25106_018E', 'B25106_022E']].sum(axis=1) / B25106.loc[:, ['B25106_002E']].sum(axis=1)
+    Database_df['RENT_COSTS30'] = B25106.loc[:,['B25106_028E', 'B25106_032E', 'B25106_036E', 'B25106_040E', 'B25106_044E']].sum(axis=1) / B25106.loc[:, ['B25106_024E']].sum(axis=1)
+    Database_df['ALL_COSTS30'] = B25106.loc[:,['B25106_006E', 'B25106_010E', 'B25106_014E', 'B25106_018E', 'B25106_022E','B25106_028E', 'B25106_032E', 'B25106_036E', 'B25106_040E', 'B25106_044E']].sum(axis=1) / B25106.loc[:, ['B25106_002E', 'B25106_024E']].sum(axis=1)
+    Database_df['HOUS_AFFORD'] = B25106.loc[:, ['B25106_001E']].sum(axis=1)
     # Show the final database dataframe to make sure it is in good shape
     # print(Database_df.to_string())
     return Database_df
@@ -125,7 +142,7 @@ def Main(year):
     # Those levels of geography. The intent is to loop through each table and feed it into a function that will instantiate
     # Each table like B25004 and B25008 into their own dataframes so we can operate on them to create columns and calcs
     # B25008 is not working skip it for now it only contains 1 column of data
-    tables = ["B25004","B25035","B25045","B25064","B25071","B25088","B25092","B25097","B25106"]
+    tables = ["B25004","B25035","B25045","B25064","B25071","B25088","B25092","B25097","B25106","DP04"]
     # Loop through URLs and use them to build dataframes, then stick them into a list
     dataframes = []
     for table in tables:
@@ -155,11 +172,12 @@ def Main(year):
     B25092 = cleaned_tables[6]
     B25097 = cleaned_tables[7]
     B25106 = cleaned_tables[8]
+    DP04   = cleaned_tables[9]
     # Run a function to create the database dataframe
     print(B25004.to_string())
     Database_Dataframe = Database_Dataframe_Initializer(B25004, year, year2)
     print(Database_Dataframe.to_string())
-    Database_Dataframe = Dataframe_Allocator(Database_Dataframe, B25004, B25035, B25045, B25064, B25071, B25088, B25092, B25097, B25106)
+    Database_Dataframe = Dataframe_Allocator(Database_Dataframe, B25004, B25035, B25045, B25064, B25071, B25088, B25092, B25097, B25106, DP04)
     print(Database_Dataframe.to_string())
 
     # Run a function to create new columns and do math
