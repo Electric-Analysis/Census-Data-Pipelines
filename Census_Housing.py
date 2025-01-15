@@ -58,7 +58,7 @@ def Table_Concatenator(year, table):
             req = API_Data_Collector(link)
             compiled_tables.append(req)
         combined_output = pd.concat(compiled_tables, ignore_index=True)
-        print(combined_output.to_string())
+        # print(combined_output.to_string())
         return combined_output
     else:
         URL = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=county%20subdivision:*&in=state:25%20county:011,013,015"
@@ -90,7 +90,7 @@ def Community_Cleaner(dataframe):
     return dataframe
 
 def String_to_Numeric(dataframe):
-    # Change all but the descriptive columns to numeric for calculations
+    # Change all but the descriptive columns to numeric for calculations and handle numeric anomolies
     dataframe = pd.concat([pd.DataFrame([pd.to_numeric(dataframe[e], errors = 'coerce')
                             for e in dataframe.columns if e not in
                             ['GEO_ID','NAME']]).T,
@@ -141,25 +141,112 @@ def Dataframe_Allocator(Database_df, B25004, B25035, B25045, B25064, B25071, B25
     # Allocate data to each column as indicated in the data dictionary
     Database_df['CEN_HOUSINGUNITS'] = DP04.loc[:, ['DP04_0001E']].sum(axis=1)
     Database_df['CEN_OCCUPHU']      = B25106.loc[:, ['B25106_001E']].sum(axis=1)
-    Database_df['CEN_VACHU'] = B25004.loc[:, ['B25004_001E']].sum(axis=1)
-    Database_df['CEN_OWNOCCHU'] = B25106.loc[:, ['B25106_002E']].sum(axis=1)
-    Database_df['CEN_RENOCCHU'] = B25106.loc[:, ['B25106_024E']].sum(axis=1)
-    Database_df['CEN_SEAVACHU'] = B25004.loc[:, ['B25004_006E']].sum(axis=1)
-    Database_df['CEN_HUYEARBLT'] = B25035.loc[:, ['B25035_001E']].sum(axis=1)
-    Database_df['PER_OWN_OCC']    = round(DP04.loc[:, ['DP04_0046PE']].sum(axis=1) / 100, 4)
-    Database_df['CEN_HUNOVHCL'] = B25045.loc[:, ['B25045_003E','B25045_012E']].sum(axis=1)
-    Database_df['CEN_MEDRENT'] = B25064.loc[:, ['B25064_001E']].sum(axis=1)
-    Database_df['CEN_RENT_INC'] = round(B25071.loc[:, ['B25071_001E']].sum(axis=1) / 100, 4)
-    Database_df['CEN_MEDOWNVAL'] = B25097.loc[:, ['B25097_001E']].sum(axis=1)
-    Database_df['CEN_MEDOWNCOSTS'] = B25088.loc[:, ['B25088_002E']].sum(axis=1)
+    Database_df['CEN_VACHU']        = B25004.loc[:, ['B25004_001E']].sum(axis=1)
+    Database_df['CEN_OWNOCCHU']     = B25106.loc[:, ['B25106_002E']].sum(axis=1)
+    Database_df['CEN_RENOCCHU']     = B25106.loc[:, ['B25106_024E']].sum(axis=1)
+
+    Database_df['CEN_SEAVACHU']     = B25004.loc[:, ['B25004_006E']].sum(axis=1)
+    Database_df['CEN_HUYEARBLT']    = B25035.loc[:, ['B25035_001E']].sum(axis=1)
+    Database_df['PER_OWN_OCC']      = round(DP04.loc[:, ['DP04_0046PE']].sum(axis=1) / 100, 4)
+    Database_df['CEN_HUNOVHCL']     = B25045.loc[:, ['B25045_003E','B25045_012E']].sum(axis=1)
+    Database_df['CEN_MEDRENT']      = B25064.loc[:, ['B25064_001E']].sum(axis=1)
+
+    Database_df['CEN_RENT_INC']     = round(B25071.loc[:, ['B25071_001E']].sum(axis=1) / 100, 4)
+    Database_df['CEN_MEDOWNVAL']    = B25097.loc[:, ['B25097_001E']].sum(axis=1)
+    Database_df['CEN_MEDOWNCOSTS']  = B25088.loc[:, ['B25088_002E']].sum(axis=1)
     Database_df['CEN_OWNCOSTS_INC'] = round(B25092.loc[:, ['B25092_002E']].sum(axis=1) / 100, 4)
-    Database_df['OWN_COSTS30'] = round(B25106.loc[:,['B25106_006E', 'B25106_010E', 'B25106_014E', 'B25106_018E', 'B25106_022E']].sum(axis=1) / B25106.loc[:, ['B25106_002E']].sum(axis=1), 4)
-    Database_df['RENT_COSTS30'] = round(B25106.loc[:,['B25106_028E', 'B25106_032E', 'B25106_036E', 'B25106_040E', 'B25106_044E']].sum(axis=1) / B25106.loc[:, ['B25106_024E']].sum(axis=1), 4)
-    Database_df['ALL_COSTS30'] = round(B25106.loc[:,['B25106_006E', 'B25106_010E', 'B25106_014E', 'B25106_018E', 'B25106_022E','B25106_028E', 'B25106_032E', 'B25106_036E', 'B25106_040E', 'B25106_044E']].sum(axis=1) / B25106.loc[:, ['B25106_002E', 'B25106_024E']].sum(axis=1), 4)
-    Database_df['HOUS_AFFORD'] = B25106.loc[:, ['B25106_001E']].sum(axis=1)
+    Database_df['OWN_COSTS30']      = round(B25106.loc[:,['B25106_006E', 'B25106_010E', 'B25106_014E', 'B25106_018E',
+                                                          'B25106_022E']].sum(axis=1) / B25106.loc[:, ['B25106_002E']].sum(axis=1), 4)
+    Database_df['RENT_COSTS30']     = round(B25106.loc[:,['B25106_028E', 'B25106_032E', 'B25106_036E', 'B25106_040E',
+                                                          'B25106_044E']].sum(axis=1) / B25106.loc[:, ['B25106_024E']].sum(axis=1), 4)
+    Database_df['ALL_COSTS30']      = round(B25106.loc[:,['B25106_006E', 'B25106_010E', 'B25106_014E', 'B25106_018E',
+                                                          'B25106_022E','B25106_028E', 'B25106_032E', 'B25106_036E',
+                                                          'B25106_040E', 'B25106_044E']].sum(axis=1) / B25106.loc[:, ['B25106_002E', 'B25106_024E']].sum(axis=1), 4)
+    Database_df['HOUS_AFFORD']      = B25106.loc[:, ['B25106_001E']].sum(axis=1)
     # Show the final database dataframe to make sure it is in good shape
     # print(Database_df.to_string())
     return Database_df
+
+
+# def Aggregate_Region(region_name, counties, headers):
+#     filtered_df = Database_df[Database_df['NAME'].isin(counties)]
+#     aggregated_data = filtered_df[headers].sum()
+#
+#
+#
+# def Region_Calculations(Database_df):
+#     # Define the columns that we will aggregate over for regional calculations, not all columns are conducive to
+#     # Regional calculations
+#     headers = [Database_df['CEN_HOUSINGUNITS'],Database_df['CEN_OCCUPHU'],Database_df['CEN_VACHU'],
+#                Database_df['CEN_OWNOCCHU'],Database_df['CEN_RENOCCHU'],Database_df['CEN_SEAVACHU'],
+#                Database_df['CEN_HUYEARBLT'],Database_df['PER_OWN_OCC'],Database_df['CEN_HUNOVHCL'],
+#                Database_df['CEN_MEDRENT'],Database_df['CEN_RENT_INC'],Database_df['CEN_MEDOWNVAL'],
+#                Database_df['CEN_MEDOWNCOSTS'],Database_df['CEN_OWNCOSTS_INC'],Database_df['OWN_COSTS30'],
+#                Database_df['RENT_COSTS30'],Database_df['ALL_COSTS30'],Database_df['HOUS_AFFORD']]
+#     # Hampden, Hampshire
+#     PVPC_Region = ["Hampden County", "Hampshire County"]
+#     # Franklin, Hampden, Hampshire
+#     Pioneer_Valley =["Franklin County", "Hampden County", "Hampshire County"]
+#
+#     Regional_Dataframe = pd.DataFrame(columns=Database_df.columns)
+#
+#     for header in headers:
+#
+#     return Regional_Dataframe
+
+# def Region_Calculations(Database_df):
+#     # Define the columns to aggregate
+#     headers = ['CEN_HOUSINGUNITS', 'CEN_OCCUPHU', 'CEN_VACHU','CEN_OWNOCCHU', 'CEN_RENOCCHU', 'CEN_SEAVACHU',
+#                'CEN_HUYEARBLT', 'PER_OWN_OCC', 'CEN_HUNOVHCL','CEN_MEDRENT', 'CEN_RENT_INC', 'CEN_MEDOWNVAL',
+#                'CEN_MEDOWNCOSTS', 'CEN_OWNCOSTS_INC', 'OWN_COSTS30','RENT_COSTS30', 'ALL_COSTS30', 'HOUS_AFFORD']
+#     # Regions and their corresponding counties
+#     PVPC_Region = ["Hampden County", "Hampshire County"]
+#     Pioneer_Valley = ["Franklin County", "Hampden County", "Hampshire County"]
+#
+#     # Create an empty DataFrame for the regional data
+#     Regional_Dataframe = pd.DataFrame(columns=Database_df.columns)
+#
+#     rows_to_sum = Database_df[Database_df['COMMUNITY'].isin(PVPC_Region)]
+#     columns_to_sum = headers
+#     summed_row = rows_to_sum[columns_to_sum].sum()
+#     summed_row['COMMUNITY'] = "PVPC Region"
+#     Regional_Dataframe = pd.concat([Database_df, pd.DataFrame([summed_row])], ignore_index=True)
+#     print(Regional_Dataframe.to_string())
+
+def Region_Calculations(Database_df,year,year2):
+    Regional_Dataframe = pd.DataFrame(columns=Database_df.columns)
+    headers = ['CEN_HOUSINGUNITS', 'CEN_OCCUPHU', 'CEN_VACHU', 'CEN_OWNOCCHU', 'CEN_RENOCCHU', 'CEN_SEAVACHU',
+               'CEN_HUNOVHCL', 'CEN_RENT_INC','CEN_OWNCOSTS_INC']
+    # ,'PER_OWN_OCC',,,'OWN_COSTS30','RENT_COSTS30', 'ALL_COSTS30', 'HOUS_AFFORD'
+    # Define the regions here
+    PVPC_Region     = ["Hampden County", "Hampshire County"]
+    Pioneer_Valley  = ["Franklin County", "Hampden County", "Hampshire County"]
+    Aggregate_Rows  = [PVPC_Region, Pioneer_Valley]
+    Region_Titles = ["PVPC_Region", "Pioneer_Valley"]
+
+    # Sums
+    for region, title in zip(Aggregate_Rows, Region_Titles):
+        rows_to_sum = Database_df[Database_df['COMMUNITY'].isin(region)]
+        columns_to_sum = headers
+        summed_row = rows_to_sum[columns_to_sum].sum()
+        summed_row['COMMUNITY'] = region
+        # print(summed_row)
+        Database_df = pd.concat([Database_df, pd.DataFrame([summed_row])], ignore_index=True)
+        Database_df.loc[Database_df.index[-1], 'STATE'] = "MA"
+        Database_df.loc[Database_df.index[-1], 'COMMUNITY'] = title
+        Database_df.loc[Database_df.index[-1], 'TIME_TYPE'] = "5-Year-Estimates"
+        Database_df.loc[Database_df.index[-1], 'TIME_VALUE'] = f"{year2}-{year}"
+        Database_df.loc[Database_df.index[-1], 'YEAR'] = year
+        print(Database_df.to_string())
+    # headers = ['CEN_HUYEARBLT','CEN_MEDRENT','CEN_MEDOWNVAL','CEN_MEDOWNCOSTS']
+    #     # # Averages
+    #     # for region in Aggregate_Rows:
+    #     #     rows_to_avg = Database_df[Database_df['COMMUNITY'].isin(region)]
+    #     #     columns_to_sum = headers
+    #     # return Database_df
+    # df.iloc[]
+
+
 
 def Main(year):
     start_time = time.time()
@@ -172,6 +259,7 @@ def Main(year):
     # Each table like B25004 and B25008 into their own dataframes so we can operate on them to create columns and calcs
     # B25008 is not working skip it for now it only contains 1 column of data
     tables = ["B25004","B25035","B25045","B25064","B25071","B25088","B25092","B25097","B25106","DP04"]
+
     # Loop through URLs and use them to build dataframes, then stick them into a list
     dataframes = []
     for table in tables:
@@ -179,13 +267,6 @@ def Main(year):
         output_table = Table_Concatenator(year, table)
         dataframes.append(output_table)
 
-    # Run a function that cleans up the community names in the pulled tables
-    # cleaned_tables=[]
-    # for table in dataframes:
-    #     table = Community_Cleaner(table)
-    #     table = String_to_Numeric(table)
-    #     cleaned_tables.append(table)
-    #     # print(table)
     cleaned_tables = [String_to_Numeric(Community_Cleaner(table)).reset_index(drop=True) for table in dataframes]
 
 
@@ -204,7 +285,10 @@ def Main(year):
     DP04   = cleaned_tables[9]
     # Run a function to create the database dataframe
     Database_Dataframe = Database_Dataframe_Initializer(B25004, year, year2)
+    # Run a function to allocate data from imported tables to database structure
     Database_Dataframe = Dataframe_Allocator(Database_Dataframe, B25004, B25035, B25045, B25064, B25071, B25088, B25092, B25097, B25106, DP04)
+    # Run a function to create regional values as aggregates of lower levels of geography
+    Database_Dataframe = Region_Calculations(Database_Dataframe,year, year2)
     print(Database_Dataframe.to_string())
 
     Database_Dataframe.to_csv(
@@ -212,10 +296,6 @@ def Main(year):
         index = False)
     print(
         f"Dataframe printed to CSV in \nC:/Users/jtilsch/OneDrive - Pioneer Valley Planning Commission/Desktop/Projects/Database Design/Data/Census_Housing/Census Housing {str(year)}.csv")
-
-
-
-
     end_time = time.time()
     print(f"Elapsed Runtime: {round(end_time - start_time, 4)} seconds")
 
@@ -227,7 +307,7 @@ def Main(year):
 #   increment 1 more beyond what you want in the latter year
 
 # year = 2022
-#
+# #
 years = range(2012,2024)
 for year in years:
     Main(year)
