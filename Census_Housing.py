@@ -43,14 +43,14 @@ def API_Data_Collector(link):
     df = pd.DataFrame(data[1:], columns = data[0], )
     return df
 
-def Table_Concatenator(year, table):
+def Table_Concatenator(year, table, api_key):
     # Conditionally handle table dp04 due to its different layout in terms of Rest API configuration otherwise concatenate
     # As in the usual way as demonstrated in the else statement
     if table == "DP04":
-        URL_Town_Franklin = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=pseudo(0500000US25011$0600000)"
-        URL_Town_Hampden = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=pseudo(0500000US25013$0600000)"
-        URL_Town_Hampshire = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=pseudo(0500000US25015$0600000)"
-        URL_State_County = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=0400000US25,0500000US25011,0500000US25013,0500000US25015"
+        URL_Town_Franklin = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=pseudo(0500000US25011$0600000)" + api_key
+        URL_Town_Hampden = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=pseudo(0500000US25013$0600000)" + api_key
+        URL_Town_Hampshire = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=pseudo(0500000US25015$0600000)" + api_key
+        URL_State_County = "https://api.census.gov/data/" + str(year) + "/acs/acs5/profile?get=group(DP04)&ucgid=0400000US25,0500000US25011,0500000US25013,0500000US25015" + api_key
         links = [URL_Town_Franklin, URL_Town_Hampden, URL_Town_Hampshire, URL_State_County]
         compiled_tables = []
 
@@ -61,9 +61,9 @@ def Table_Concatenator(year, table):
         # print(combined_output.to_string())
         return combined_output
     else:
-        URL = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=county%20subdivision:*&in=state:25%20county:011,013,015"
-        URL_Counties = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=county:011,013,015&in=state:25"
-        URL_State = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=state:25"
+        URL = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=county%20subdivision:*&in=state:25%20county:011,013,015" + api_key
+        URL_Counties = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=county:011,013,015&in=state:25" + api_key
+        URL_State = "https://api.census.gov/data/" + str(year) + "/acs/acs5?get=group(" + table + ")&for=state:25" + api_key
         links = [URL,URL_Counties,URL_State]
         compiled_tables = []
         for link in links:
@@ -237,7 +237,7 @@ def Region_Calculations(Database_df,year,year2):
         Database_df.loc[Database_df.index[-1], 'TIME_TYPE'] = "5-Year-Estimates"
         Database_df.loc[Database_df.index[-1], 'TIME_VALUE'] = f"{year2}-{year}"
         Database_df.loc[Database_df.index[-1], 'YEAR'] = year
-        print(Database_df.to_string())
+        # print(Database_df.to_string())
     # headers = ['CEN_HUYEARBLT','CEN_MEDRENT','CEN_MEDOWNVAL','CEN_MEDOWNCOSTS']
     #     # # Averages
     #     # for region in Aggregate_Rows:
@@ -245,10 +245,13 @@ def Region_Calculations(Database_df,year,year2):
     #     #     columns_to_sum = headers
     #     # return Database_df
     # df.iloc[]
-
+    return Database_df
 
 
 def Main(year):
+    csv_file_path = "C:/Users/jtilsch/PycharmProjects/PVPC Data Pipelines/census api key.csv"
+    api_key = pd.read_csv(csv_file_path, header=None).iloc[0, 0]
+
     start_time = time.time()
     year = year
     year2 = year - 4
@@ -264,7 +267,7 @@ def Main(year):
     dataframes = []
     for table in tables:
         # Gets the api request returns a dataframe with all levels of geography
-        output_table = Table_Concatenator(year, table)
+        output_table = Table_Concatenator(year, table, api_key)
         dataframes.append(output_table)
 
     cleaned_tables = [String_to_Numeric(Community_Cleaner(table)).reset_index(drop=True) for table in dataframes]
@@ -306,7 +309,8 @@ def Main(year):
 #   Keep in mind the range function is [year,year) or Inclusive in the first year, non-inclusive in the second year so
 #   increment 1 more beyond what you want in the latter year
 
-# year = 2022
+# year = 2023
+# Main(year)
 # #
 years = range(2012,2024)
 for year in years:
@@ -315,6 +319,3 @@ for year in years:
 # Printer("C:/Users/jtilsch/OneDrive - Pioneer Valley Planning Commission/Desktop/Projects/Database Design/Data/Census_Housing/Census Housing")
 
 
-print("Ladies and gentlemen, we have lift off!!")
-
-Main(year)
