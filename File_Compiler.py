@@ -4,8 +4,8 @@ import os
 # File path containing the yearly data files
 # Change the file path as needed to compile the data files you want
 # Change the file name as needed as well to change the output name of the file
-file_path = r"C:/Users/jtilsch/OneDrive - Pioneer Valley Planning Commission/Desktop/Projects/Database Design/Data/Census_Housing/"
-file_name = "Compiled_Census_Census_Housing_Data"
+file_path = r"C:/Users/jtilsch/OneDrive - Pioneer Valley Planning Commission/Desktop/Projects/Database Design/Data/Census_Education"
+file_name = "Compiled_Census_Census_Education_Data"
 # Get a list of all files in the directory (assuming they're CSV files)
 files = [os.path.join(file_path, f) for f in os.listdir(file_path) if f.endswith('.csv')]
 

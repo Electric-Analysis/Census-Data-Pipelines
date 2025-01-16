@@ -121,11 +121,7 @@ def Database_Dataframe_Initializer(dataframe, year,year2):
     #                        'Southampton','Southwick','Springfield','Sunderland','Tolland','Wales','Ware','Warwick',
     #                        'Wendell','West Springfield','Westfield','Westhampton','Whately','Wilbraham','Williamsburg',
     #                        'Worthington']
-    Database_df_Headers = ['CEN_HOUSINGUNITS','CEN_OCCUPHU','CEN_VACHU','CEN_OWNOCCHU','CEN_RENOCCHU','CEN_SEAVACHU',
-                           'CEN_HUYEARBLT','PER_OWN_OCC','CEN_HUNOVHCL','CEN_MEDRENT','CEN_RENT_INC','CEN_MEDOWNVAL',
-                           'CEN_MEDOWNCOSTS','CEN_OWNCOSTS_INC','OWN_COSTS30','RENT_COSTS30','ALL_COSTS30','HOUS_AFFORD',
-                           'HAVE_DATA','RECENT_YEAR',
-]
+    Database_df_Headers = []
     # community_series = pd.Series(ordered_communities)
 
     Database_df = pd.DataFrame(np.nan, index=range(len(ordered_communities)), columns=Database_df_Headers)
