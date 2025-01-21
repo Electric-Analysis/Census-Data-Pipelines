@@ -208,7 +208,6 @@ def Dataframe_Allocator(Database_df, B25004, B25035, B25045, B25064, B25071, B25
 #     summed_row['COMMUNITY'] = "PVPC Region"
 #     Regional_Dataframe = pd.concat([Database_df, pd.DataFrame([summed_row])], ignore_index=True)
 #     print(Regional_Dataframe.to_string())
-
 def Region_Calculations(Database_df,year,year2):
     Regional_Dataframe = pd.DataFrame(columns=Database_df.columns)
     headers = ['CEN_HOUSINGUNITS', 'CEN_OCCUPHU', 'CEN_VACHU', 'CEN_OWNOCCHU', 'CEN_RENOCCHU', 'CEN_SEAVACHU',
