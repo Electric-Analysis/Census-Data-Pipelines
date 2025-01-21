@@ -70,8 +70,6 @@ def Census_Age():
     B09001_Headers = ["UNDER_3_YEARS","3_4_YEARS","5_YEARS","6_8_YEARS","9_11_YEARS","12_14_YEARS", "15_17_YEARS"]
 
 
-    api_key = "49099c23404527970655eaa39f3d39c606843dfc"
-
     # Request B01001 Tables for town county and state
     B01001_request = requests.get(B01001_URL)
     B01001_COUNTY_request = requests.get(B01001_COUNTY_URL)
